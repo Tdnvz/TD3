@@ -1,0 +1,110 @@
+import { useState } from "react";
+import { motion } from "framer-motion";
+
+// ۳۰ رنگ انتخابی برای پس‌زمینه
+const colors = [
+  "red", "blue", "green", "yellow", "purple", "orange", "pink",
+  "brown", "gray", "cyan", "lime", "indigo", "teal", "olive", "navy",
+  "maroon", "gold", "silver", "black", "white", "violet", "magenta", "coral",
+  "salmon", "khaki", "plum", "orchid", "turquoise", "lavender", "beige"
+];
+
+export default function DailyPlanner() {
+  const [bgColor, setBgColor] = useState("white");
+  const [tasks, setTasks] = useState({});
+  const [completedTasks, setCompletedTasks] = useState({});
+  const [day, setDay] = useState("Monday");
+
+  const handleTaskChange = (e) => {
+    setTasks({ ...tasks, [day]: e.target.value });
+  };
+
+  const toggleTaskCompletion = () => {
+    setCompletedTasks({ ...completedTasks, [day]: !completedTasks[day] });
+  };
+
+  // تابع دریافت برنامه پیشنهادی از API چت‌جی‌پی‌تی
+  const generatePlan = async () => {
+    try {
+      const response = await fetch("https://api.openai.com/v1/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // کلید API خود را جایگزین کنید:
+          "Authorization": `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`
+        },
+        body: JSON.stringify({
+          model: "gpt-4",
+          prompt: `یک برنامه روزانه برای ${day} پیشنهاد بده که شامل کارهای مفید باشد.`,
+          max_tokens: 100
+        })
+      });
+      const data = await response.json();
+      setTasks({ ...tasks, [day]: data.choices[0].text });
+    } catch (error) {
+      console.error("Error generating plan:", error);
+    }
+  };
+
+  return (
+    <motion.div
+      className="min-h-screen flex flex-col items-center p-6"
+      animate={{ backgroundColor: bgColor }}
+    >
+      <h1 style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "1rem" }}>
+        برنامه روزانه
+      </h1>
+      
+      {/* انتخاب روز */}
+      <select value={day} onChange={(e) => setDay(e.target.value)} style={{ marginBottom: "1rem" }}>
+        {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map(d => (
+          <option key={d} value={d}>{d}</option>
+        ))}
+      </select>
+      
+      {/* انتخاب رنگ پس‌زمینه */}
+      <select value={bgColor} onChange={(e) => setBgColor(e.target.value)} style={{ marginBottom: "1rem" }}>
+        {colors.map(color => (
+          <option key={color} value={color}>{color}</option>
+        ))}
+      </select>
+      
+      {/* بخش برنامه */}
+      <div style={{
+          width: "100%",
+          maxWidth: "500px",
+          padding: "1rem",
+          border: "1px solid #ccc",
+          borderRadius: "8px",
+          marginBottom: "1rem"
+        }}>
+        <textarea
+          value={tasks[day] || ""}
+          onChange={handleTaskChange}
+          placeholder="برنامه خود را وارد کنید"
+          rows="6"
+          style={{ width: "100%", padding: "0.5rem" }}
+        />
+        <div style={{ display: "flex", alignItems: "center", marginTop: "0.5rem" }}>
+          <input
+            type="checkbox"
+            checked={completedTasks[day] || false}
+            onChange={toggleTaskCompletion}
+          />
+          <span style={{ marginLeft: "0.5rem" }}>انجام شد</span>
+        </div>
+        <button onClick={generatePlan} style={{
+          marginTop: "1rem",
+          padding: "0.5rem 1rem",
+          backgroundColor: "#0070f3",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer"
+        }}>
+          برنامه پیشنهادی
+        </button>
+      </div>
+    </motion.div>
+  );
+}
