@@ -1,11 +1,18 @@
-# Daily Planner
+const express = require("express");
+const cors = require("cors");
 
-این پروژه یک برنامه‌ریز روزانه است که:
-- امکان مدیریت برنامه روزانه برای هر روز هفته را دارد.
-- با استفاده از API چت‌جی‌پی‌تی، برنامه پیشنهادی برای روز ارائه می‌دهد.
-- امکان تغییر رنگ پس‌زمینه از بین ۳۰ رنگ مختلف را فراهم می‌کند.
-- قابلیت تیک زدن کارهای انجام‌شده را دارد.
+const app = express();
+const port = 3000;
 
-## شروع کار
+app.use(cors());
+app.use(express.json());
 
-### نصب وابستگی‌ها:
+// مسیر پیش‌فرض
+app.get("/", (req, res) => {
+    res.send("سرور Node.js اجرا شد!");
+});
+
+// اجرای سرور
+app.listen(port, () => {
+    console.log(`سرور روی پورت ${port} اجرا شد: http://localhost:${port}`);
+});
